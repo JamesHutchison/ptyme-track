@@ -5,7 +5,7 @@ import logging
 import time
 import urllib.request
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Union
 
 from ptyme_track.ptyme_env import (
     PTYME_TRACK_DIR,
@@ -26,10 +26,12 @@ class PtymeClient:
     def __init__(self, server_url: str) -> None:
         self.server_url = server_url
         self._file_hash_cache: Dict[str, bytes] = {}
-        self._last_update = None
+        self._last_update: Union[float, None] = None
 
     def run_forever(self) -> None:
+        print("Starting ptyme-track", flush=True)
         prev_files_hash = None
+        stopped = False
         while True:
             start = time.time()
             watched_dir = self._get_watched_dir()
@@ -38,7 +40,9 @@ class PtymeClient:
                 self.record_time(files_hash)
                 prev_files_hash = files_hash
             else:
-                self.record_stop(files_hash)
+                if not stopped:
+                    self.record_stop(files_hash)
+                stopped = True
             end = time.time()
             logger.debug(f"Hash took {(end - start):.1f} seconds")
             next_time = start + PTYME_WATCH_INTERVAL_MIN * 60
@@ -70,7 +74,7 @@ class PtymeClient:
                 running_hash.update(self._file_hash_cache[str(file)])
         logger.debug(f"Hashed {count} files in {(time.time() - start):.1f} seconds")
         self._last_update = start
-        return file_hash.hexdigest()
+        return running_hash.hexdigest()
 
     def prep_ptyme_dir(self) -> None:
         track_dir = Path(PTYME_TRACK_DIR)
@@ -107,7 +111,7 @@ class PtymeClient:
 
 class StandalonePtymeClient(PtymeClient):
     def __init__(self) -> None:
-        super().__init__(None)
+        super().__init__("")
 
     def _retrieve_signed_time(self) -> Dict:
         return sign_time()
