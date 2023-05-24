@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-ptyme-track
+poetry run ptyme-track
