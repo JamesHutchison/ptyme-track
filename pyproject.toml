@@ -1,0 +1,24 @@
+[tool.ruff]
+# hard limit, error here
+line-length = 120
+
+[tool.black]
+# soft limit, wrap just before 100 chars
+line-length = 98
+
+[tool.poetry]
+name = "ptyme-track"
+version = "0.1.0"
+description = "Time tracking based on file modifications and signed reporting. The P is silent like in Pterodactyl"
+authors = ["James Hutchison <JamesGHutchison@proton.me>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "ptyme_track"}]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
