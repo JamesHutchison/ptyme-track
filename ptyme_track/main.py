@@ -3,7 +3,7 @@ import logging
 
 from ptyme_track.cement import cement_cur_times
 from ptyme_track.client import PtymeClient, StandalonePtymeClient
-from ptyme_track.ptyme_env import SERVER_URL
+from ptyme_track.ptyme_env import PTYME_WATCHED_DIRS, SERVER_URL
 
 logging.basicConfig(level=logging.INFO)
 
@@ -32,10 +32,11 @@ def main():
 
         generate_secret()
         return
+    watched_dirs = PTYME_WATCHED_DIRS.split(":")
     if args.client:
-        client = PtymeClient(SERVER_URL)
+        client = PtymeClient(SERVER_URL, watched_dirs)
     else:
-        client = StandalonePtymeClient()
+        client = StandalonePtymeClient(watched_dirs)
     client.prep_ptyme_dir()
     client.run_forever()
 

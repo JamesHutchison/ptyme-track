@@ -5,12 +5,11 @@ import logging
 import time
 import urllib.request
 from pathlib import Path
-from typing import Dict, Union
+from typing import Dict, Iterator, List, Union
 
 from ptyme_track.ptyme_env import (
     PTYME_TRACK_DIR,
     PTYME_WATCH_INTERVAL_MIN,
-    PTYME_WATCHED_DIR,
     SERVER_URL,
 )
 from ptyme_track.server import sign_time
@@ -23,19 +22,23 @@ logger = logging.getLogger(__name__)
 
 
 class PtymeClient:
-    def __init__(self, server_url: str) -> None:
+    def __init__(self, server_url: str, watched_dirs: List[str]) -> None:
         self.server_url = server_url
         self._file_hash_cache: Dict[str, bytes] = {}
         self._last_update: Union[float, None] = None
+        self._watched_dirs = watched_dirs
 
     def run_forever(self) -> None:
         print("Starting ptyme-track", flush=True)
         prev_files_hash = None
         stopped = False
+        rolling_hash = hashlib.md5()
         while True:
             start = time.time()
-            watched_dir = self._get_watched_dir()
-            files_hash = self._get_files_hash(watched_dir)
+            for watched_dir in self._get_watched_dirs():
+                rolling_hash.update(self._get_files_hash(watched_dir).encode("utf-8"))
+            self._last_update = start
+            files_hash = rolling_hash.hexdigest()
             if files_hash != prev_files_hash:
                 self.record_time(files_hash)
                 prev_files_hash = files_hash
@@ -50,9 +53,9 @@ class PtymeClient:
             if cur_time < next_time:
                 time.sleep(next_time - cur_time)
 
-    def _get_watched_dir(self) -> Path:
-        # get the directory to watch from the environment
-        return Path(PTYME_WATCHED_DIR)
+    def _get_watched_dirs(self) -> Iterator[Path]:
+        for path in self._watched_dirs:
+            yield Path(path)
 
     def _get_files_hash(self, watched_dir: Path) -> str:
         # get the hash of all the files in the watched directory
@@ -61,8 +64,12 @@ class PtymeClient:
         running_hash = hashlib.md5()
         last_update = self._last_update
         start = time.time()
-        for file in watched_dir.glob("[!.]*/**/[!.]*"):
-            if file.is_file():
+        if str(watched_dir).startswith(".") and str(watched_dir) not in (".", ".."):
+            glob = "**/*"
+        else:
+            glob = "[!.]*/**/[!.]*"
+        for file in watched_dir.glob(glob):
+            if file.is_file() and not str(file.name).startswith("."):
                 if not last_update or file.stat().st_mtime > last_update:
                     count += 1
                     if count % COUNT_MOD == 0:
@@ -73,7 +80,6 @@ class PtymeClient:
                     self._file_hash_cache[str(file)] = file_hash.hexdigest().encode("utf-8")
                 running_hash.update(self._file_hash_cache[str(file)])
         logger.debug(f"Hashed {count} files in {(time.time() - start):.1f} seconds")
-        self._last_update = start
         return running_hash.hexdigest()
 
     def prep_ptyme_dir(self) -> None:
@@ -110,8 +116,8 @@ class PtymeClient:
 
 
 class StandalonePtymeClient(PtymeClient):
-    def __init__(self) -> None:
-        super().__init__("")
+    def __init__(self, watched_dirs: List[str]) -> None:
+        super().__init__("", watched_dirs)
 
     def _retrieve_signed_time(self) -> Dict:
         return sign_time()
