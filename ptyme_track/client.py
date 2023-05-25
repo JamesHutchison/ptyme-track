@@ -4,6 +4,7 @@ import json
 import logging
 import time
 import urllib.request
+from dataclasses import asdict
 from pathlib import Path
 from typing import Dict, Iterator, List, Union
 
@@ -13,6 +14,7 @@ from ptyme_track.ptyme_env import (
     SERVER_URL,
 )
 from ptyme_track.server import sign_time
+from ptyme_track.signed_time import SignedTime
 
 CUR_TIMES_FILE = Path(".cur_times")
 CUR_TIMES_PATH = Path(PTYME_TRACK_DIR) / CUR_TIMES_FILE
@@ -91,7 +93,7 @@ class PtymeClient:
         if not git_ignore.exists():
             git_ignore.write_text(str(CUR_TIMES_FILE))
 
-    def _retrieve_signed_time(self) -> Dict:
+    def _retrieve_signed_time(self) -> SignedTime:
         # retrieve the current time from the server using the built-in urllib module
         response = urllib.request.urlopen(SERVER_URL)
         logger.debug("Got signed time")
@@ -104,12 +106,12 @@ class PtymeClient:
     def record_stop(self, files_hash: str) -> None:
         self.record_time(files_hash, stop=True)
 
-    def _record_time(self, signed_time: dict, hash: str, stop: bool) -> None:
+    def _record_time(self, signed_time: SignedTime, hash: str, stop: bool) -> None:
         cur_time = datetime.datetime.utcnow()
         time_as_str = cur_time.strftime("%Y-%m-%d %H:%M:%S")
         with CUR_TIMES_PATH.open("a") as cur_time_log:
             json.dump(
-                {"time": time_as_str, "signed_time": signed_time, "hash": hash, "stop": stop},
+                {"time": time_as_str, "signed_time": asdict(signed_time), "hash": hash, "stop": stop},
                 cur_time_log,
             )
             cur_time_log.write("\n")
@@ -119,5 +121,5 @@ class StandalonePtymeClient(PtymeClient):
     def __init__(self, watched_dirs: List[str]) -> None:
         super().__init__("", watched_dirs)
 
-    def _retrieve_signed_time(self) -> Dict:
+    def _retrieve_signed_time(self) -> SignedTime:
         return sign_time()
