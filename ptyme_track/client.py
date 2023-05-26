@@ -1,13 +1,18 @@
+from __future__ import annotations
+
 import datetime
+import functools
 import hashlib
+import itertools
 import json
 import logging
 import time
 import urllib.request
 from dataclasses import asdict
 from pathlib import Path
-from typing import Dict, Iterator, List, Union
+from typing import Dict, Iterator, List, Optional, Tuple, Union
 
+from ptyme_track.cur_times import CUR_TIMES_FILE, CUR_TIMES_PATH
 from ptyme_track.ptyme_env import (
     PTYME_TRACK_DIR,
     PTYME_WATCH_INTERVAL_MIN,
@@ -16,19 +21,20 @@ from ptyme_track.ptyme_env import (
 from ptyme_track.server import sign_time
 from ptyme_track.signed_time import SignedTime
 
-CUR_TIMES_FILE = Path(".cur_times")
-CUR_TIMES_PATH = Path(PTYME_TRACK_DIR) / CUR_TIMES_FILE
 COUNT_MOD = 10  # when to take a small break when hashing files
 
 logger = logging.getLogger(__name__)
 
 
 class PtymeClient:
-    def __init__(self, server_url: str, watched_dirs: List[str]) -> None:
+    def __init__(
+        self, server_url: str, watched_dirs: List[str], cur_times: Path = CUR_TIMES_PATH
+    ) -> None:
         self.server_url = server_url
         self._file_hash_cache: Dict[str, bytes] = {}
         self._last_update: Union[float, None] = None
         self._watched_dirs = watched_dirs
+        self._cur_times = cur_times
 
     def run_forever(self) -> None:
         print("Starting ptyme-track", flush=True)
@@ -36,24 +42,44 @@ class PtymeClient:
         stopped = False
         rolling_hash = hashlib.md5()
         while True:
-            start = time.time()
-            for watched_dir in self._get_watched_dirs():
-                rolling_hash.update(self._get_files_hash(watched_dir).encode("utf-8"))
-            self._last_update = start
-            files_hash = rolling_hash.hexdigest()
-            if files_hash != prev_files_hash:
-                self.record_time(files_hash)
-                prev_files_hash = files_hash
-            else:
-                if not stopped:
-                    self.record_stop(files_hash)
-                stopped = True
-            end = time.time()
-            logger.debug(f"Hash took {(end - start):.1f} seconds")
-            next_time = start + PTYME_WATCH_INTERVAL_MIN * 60
-            cur_time = time.time()
-            if cur_time < next_time:
-                time.sleep(next_time - cur_time)
+            prev_files_hash, stopped, rolling_hash = self._run_loop(
+                prev_files_hash, stopped, rolling_hash
+            )
+
+    def _run_loop(
+        self, prev_files_hash: Optional[str], stopped: bool, rolling_hash: hashlib._Hash
+    ) -> Tuple[Union[str, None], bool, hashlib._Hash]:
+        start = time.time()
+        files_hash = self._get_files_hash_for_watched_dirs(rolling_hash)
+        # _last_update should be set BEFORE the hash is calculated to avoid a race condition
+        self._last_update = start
+        stopped = self._record_time_or_stop(files_hash, prev_files_hash, stopped)
+        prev_files_hash = files_hash
+        end = time.time()
+        logger.debug(f"Hash took {(end - start):.1f} seconds")
+        next_time = start + PTYME_WATCH_INTERVAL_MIN * 60
+        cur_time = time.time()
+        if cur_time < next_time:
+            self._perform_sleep(next_time - cur_time)
+        return prev_files_hash, stopped, rolling_hash
+
+    def _get_files_hash_for_watched_dirs(self, rolling_hash: hashlib._Hash) -> str:
+        for watched_dir in self._get_watched_dirs():
+            rolling_hash.update(self._get_files_hash(watched_dir).encode("utf-8"))
+        return rolling_hash.hexdigest()
+
+    def _record_time_or_stop(
+        self, files_hash: str, prev_files_hash: Optional[str], stopped: bool
+    ) -> bool:
+        if files_hash != prev_files_hash:
+            self._record_time(files_hash)
+            return False
+        if not stopped:
+            self._record_stop(files_hash)
+        return True
+
+    def _perform_sleep(self, duration: float) -> None:
+        time.sleep(duration)
 
     def _get_watched_dirs(self) -> Iterator[Path]:
         for path in self._watched_dirs:
@@ -66,11 +92,9 @@ class PtymeClient:
         running_hash = hashlib.md5()
         last_update = self._last_update
         start = time.time()
-        if str(watched_dir).startswith(".") and str(watched_dir) not in (".", ".."):
-            glob = "**/*"
-        else:
-            glob = "[!.]*/**/[!.]*"
-        for file in watched_dir.glob(glob):
+        local_glob = "[!.]*"
+        glob = "[!.]*/**/[!.]*"
+        for file in itertools.chain(watched_dir.glob(local_glob), watched_dir.glob(glob)):
             if file.is_file() and not str(file.name).startswith("."):
                 if not last_update or file.stat().st_mtime > last_update:
                     count += 1
@@ -95,23 +119,28 @@ class PtymeClient:
 
     def _retrieve_signed_time(self) -> SignedTime:
         # retrieve the current time from the server using the built-in urllib module
-        response = urllib.request.urlopen(SERVER_URL)
+        response = urllib.request.urlopen(self.server_url)
         logger.debug("Got signed time")
         return json.loads(response.read().decode("utf-8"))
 
-    def record_time(self, files_hash: str, stop: bool = False) -> None:
+    def _record_time(self, files_hash: str, stop: bool = False) -> None:
         signed_time = self._retrieve_signed_time()
-        self._record_time(signed_time, files_hash, stop)
+        self._perform_record_time(signed_time, files_hash, stop)
 
-    def record_stop(self, files_hash: str) -> None:
-        self.record_time(files_hash, stop=True)
+    def _record_stop(self, files_hash: str) -> None:
+        self._record_time(files_hash, stop=True)
 
-    def _record_time(self, signed_time: SignedTime, hash: str, stop: bool) -> None:
+    def _perform_record_time(self, signed_time: SignedTime, hash: str, stop: bool) -> None:
         cur_time = datetime.datetime.utcnow()
         time_as_str = cur_time.strftime("%Y-%m-%d %H:%M:%S")
-        with CUR_TIMES_PATH.open("a") as cur_time_log:
+        with self._cur_times.open("a") as cur_time_log:
             json.dump(
-                {"time": time_as_str, "signed_time": asdict(signed_time), "hash": hash, "stop": stop},
+                {
+                    "time": time_as_str,
+                    "signed_time": asdict(signed_time),
+                    "hash": hash,
+                    "stop": stop,
+                },
                 cur_time_log,
             )
             cur_time_log.write("\n")

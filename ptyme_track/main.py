@@ -6,7 +6,7 @@ from pathlib import Path
 
 from ptyme_track.cement import cement_cur_times
 from ptyme_track.client import PtymeClient, StandalonePtymeClient
-from ptyme_track.ptyme_env import PTYME_WATCHED_DIRS, SECRET, SERVER_URL
+from ptyme_track.ptyme_env import PTYME_WATCHED_DIRS, SERVER_URL
 from ptyme_track.secret import get_secret
 
 logging.basicConfig(level=logging.INFO)
