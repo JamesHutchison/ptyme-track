@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import datetime
-import functools
 import hashlib
 import itertools
 import json
@@ -16,7 +15,6 @@ from ptyme_track.cur_times import CUR_TIMES_FILE, CUR_TIMES_PATH
 from ptyme_track.ptyme_env import (
     PTYME_TRACK_DIR,
     PTYME_WATCH_INTERVAL_MIN,
-    SERVER_URL,
 )
 from ptyme_track.server import sign_time
 from ptyme_track.signed_time import SignedTime
