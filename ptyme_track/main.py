@@ -23,6 +23,9 @@ def main():
     parser.add_argument("--cement", help="Cement to file")
     # time-blocks takes a file to extract the time blocks from
     parser.add_argument("--time-blocks", help="Extract time blocks from file")
+    parser.add_argument(
+        "--standalone", action="store_true", help="Run as both a client and a server"
+    )
 
     args = parser.parse_args()
 
@@ -59,8 +62,11 @@ def main():
     watched_dirs = PTYME_WATCHED_DIRS.split(":")
     if args.client:
         client = PtymeClient(SERVER_URL, watched_dirs)
-    else:
+    elif args.standalone:
         client = StandalonePtymeClient(watched_dirs)
+    else:
+        parser.print_help()
+        return
     client.prep_ptyme_dir()
     client.run_forever()
 
