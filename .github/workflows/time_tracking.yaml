@@ -33,7 +33,7 @@ jobs:
   log_time:
     needs: should_run
     permissions:
-      issues: write
+      pull-requests: write
     runs-on: ubuntu-latest
     if: ${{ needs.should_run.outputs.should_run == 'true' }}
     steps:
