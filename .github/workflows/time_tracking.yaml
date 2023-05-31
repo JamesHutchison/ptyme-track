@@ -26,10 +26,8 @@ jobs:
       - name: Run command and save output
         id: run-command
         uses: mathiasvr/command-output@v2.0.0
-        env:
-          PTYME_TRACK_BASE_BRANCH: origin/${{ github.event.pull_request.base.ref }}
         with:
-          run: poetry run ptyme-track --git-ci-times
+          run: PTYME_TRACK_BASE_BRANCH=origin/${{ github.event.pull_request.base.ref }} poetry run ptyme-track --git-ci-times
       - name: Comment on time spent
         uses: actions/github-script@v6
         env:
