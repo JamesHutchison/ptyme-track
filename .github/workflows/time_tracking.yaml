@@ -35,7 +35,7 @@ jobs:
     permissions:
       issues: write
     runs-on: ubuntu-latest
-    if: ${{ steps.should_run.outputs.should_run == 'true' }}
+    if: ${{ jobs.should_run.outputs.should_run == 'true' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
