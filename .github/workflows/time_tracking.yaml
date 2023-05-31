@@ -1,6 +1,8 @@
 on:
   pull_request:
-    types: [opened]
+    types: [opened, synchronized]
+    paths:
+      - '.ptyme_track/*'
 
 jobs:
   log time:
