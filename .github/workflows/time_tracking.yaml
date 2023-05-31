@@ -8,7 +8,7 @@ jobs:
   should_run:
     runs-on: ubuntu-latest
     outputs:
-      run_job: ${{ steps.check_changes.outputs.run_job }}
+      should_run: ${{ steps.check_changes.outputs.should_run }}
 
     steps:
     - name: Checkout repository
