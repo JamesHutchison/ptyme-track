@@ -1,9 +1,8 @@
 on:
-  push:
-  # pull_request:
-  #   types: [opened, synchronized]
-  #   paths:
-  #     - '.ptyme_track/*'
+  pull_request:
+    types: [opened, synchronized]
+    # paths:
+    #   - '.ptyme_track/*'
 
 jobs:
   log_time:
@@ -24,7 +23,7 @@ jobs:
       - name: Run command and save output
         id: run-command
         env:
-          PTYME_TRACK_BASE_BRANCH: ${{ github.base_ref_name }}
+          PTYME_TRACK_BASE_BRANCH: ${{ github.event.pull_request.base.ref }}
         run: |
           echo "<< $PTYME_TRACK_BASE_BRANCH >>"
           poetry run ptyme-track --git-ci-times
