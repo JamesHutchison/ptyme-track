@@ -31,6 +31,7 @@ jobs:
         done
         echo "should_run=$RUN_JOB" >> $GITHUB_OUTPUT
   log_time:
+    needs: should_run
     permissions:
       issues: write
     runs-on: ubuntu-latest
