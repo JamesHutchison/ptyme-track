@@ -16,7 +16,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3.5.2
       with:
         fetch-depth: 2
         ref: refs/pull/${{ inputs.pr-number }}/head
@@ -43,7 +43,7 @@ jobs:
     if: ${{ needs.should_run.outputs.should_run == 'true' }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3.5.2
       - name: Set up Python 3.11
         uses: actions/setup-python@v3
         with:
