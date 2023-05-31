@@ -37,6 +37,6 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              body: ${output}
+              body: output
             });
             console.log(`Comment created: ${comment.data.html_url}`);
