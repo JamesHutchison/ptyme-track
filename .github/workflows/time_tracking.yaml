@@ -1,9 +1,13 @@
 name: Get logged time
 on:
   workflow_call:
-  pull_request:
-    paths:
-      - '.ptyme_track/*'
+    inputs:
+      github-token:
+        required: true
+        type: string
+      base-branch:
+        required: true
+        type: string
 
 jobs:
   should_run:
@@ -56,13 +60,13 @@ jobs:
         id: run-command
         uses: mathiasvr/command-output@v2.0.0
         env:
-          PTYME_TRACK_BASE_BRANCH: origin/${{ github.event.pull_request.base.ref }}
+          PTYME_TRACK_BASE_BRANCH: ${{ inputs.base-branch }}
         with:
           run: poetry run ptyme-track --git-ci-times
       - name: Comment on time spent
         uses: actions/github-script@v6
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ inputs.github-token }}
         with:
           script: |
             const output = `${{ steps.run-command.outputs.stdout }}`;
