@@ -6,8 +6,8 @@ on:
 
 jobs:
   log_time:
-    permissions:
-      issues: write
+    # permissions:
+    #   issues: write
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
