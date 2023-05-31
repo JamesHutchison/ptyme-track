@@ -14,7 +14,7 @@ from ptyme_track.secret import get_secret
 logging.basicConfig(level=logging.INFO)
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="ptyme_track")
     parser.add_argument(
         "--generate-secret", action="store_true", help="Generate a secret and update gitignore"
