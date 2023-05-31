@@ -42,7 +42,9 @@ def display_git_ci_diff_times(base_branch: str) -> None:
                 user = match.group(1)
                 if user == ".gitignore":
                     user = None
-                records = []
+                    records = None
+                else:
+                    records = []
         elif line.startswith("+"):
             if records is not None:
                 record = json.loads(line[1:])
