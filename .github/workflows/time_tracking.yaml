@@ -26,7 +26,7 @@ jobs:
         env:
           PTYME_TRACK_BASE_BRANCH: ${{ github.base_ref_name }}
         run: |
-          ptyme-track --git-ci-times
+          poetry run ptyme-track --git-ci-times
       - name: Comment on time spent
         uses: actions/github-script@v4
         env:
