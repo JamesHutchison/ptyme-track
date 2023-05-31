@@ -33,7 +33,6 @@ jobs:
         with:
           script: |
             const output = '${{ steps.run-command.outputs.stdout }}';
-            const context = github.context;
             const comment = await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
