@@ -1,5 +1,6 @@
 name: Get logged time
 on:
+  workflow_call:
   pull_request:
     paths:
       - '.ptyme_track/*'
