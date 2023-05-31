@@ -26,6 +26,7 @@ jobs:
         for FILE in $CHANGED_FILES
         do
           if [[ "$FILE" == ".ptyme_track/"* ]]; then
+            echo "Found .ptyme_track/ file: $FILE"
             RUN_JOB='true'
             break
           fi
