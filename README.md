@@ -33,4 +33,12 @@ Total duration:  11:47:22
 ```
 
 ## Adding to the CI
-TBD
+
+Add this workflow:
+
+```
+name: Display tracked time
+jobs:
+    track_time:
+        uses: JamesHutchison/ptyme-track/.github/workflows/time_tracking.yaml
+```
