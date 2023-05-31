@@ -50,4 +50,5 @@ jobs:
       pull-requests: write
     with:
       base-branch: origin/${{ github.event.pull_request.base.ref }}
+      pr-number: ${{ github.event.pull_request.number }}
 ```
