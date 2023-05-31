@@ -7,5 +7,7 @@ on:
 jobs:
   track-time:
     uses: ./.github/workflows/time_tracking.yaml
+    permissions:
+      pull-requests: write
     with:
       base-branch: origin/${{ github.event.pull_request.base.ref }}
