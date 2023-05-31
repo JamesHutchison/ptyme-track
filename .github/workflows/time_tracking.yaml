@@ -20,8 +20,6 @@ jobs:
       with:
         fetch-depth: 2
         ref: refs/pull/${{ inputs.pr-number }}/head
-    - name: Install ptyme-track
-      run: pip install git+https://github.com/JamesHutchison/ptyme-track
     - name: Get changed files
       id: check_changes
       run: |
@@ -50,12 +48,8 @@ jobs:
         uses: actions/setup-python@v3
         with:
           python-version: 3.11
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade poetry
-          poetry install --no-interaction
-      - name: Do poetry install
-        run: poetry install
+      - name: Install ptyme-track
+        run: pip install git+https://github.com/JamesHutchison/ptyme-track
       - name: Fetch from git
         run: git fetch --depth=1 origin
       - name: Run command and save output
@@ -64,7 +58,7 @@ jobs:
         env:
           PTYME_TRACK_BASE_BRANCH: ${{ inputs.base-branch }}
         with:
-          run: poetry run ptyme-track --git-ci-times
+          run: ptyme-track --git-ci-times
       - name: Comment on time spent
         uses: actions/github-script@v6
         env:
