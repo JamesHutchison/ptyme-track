@@ -33,7 +33,7 @@ class TestPtymeClient:
             side_effect=[(new_hash, stopped), StopIteration],
         )
 
-        client = PtymeClient("", ["a directory"], Path(""))
+        client = PtymeClient("", ["a directory"], [], Path(""))
 
         with pytest.raises(StopIteration):
             client.run_forever()
@@ -45,7 +45,7 @@ class TestPtymeClient:
         def test_with_empty_watched_dir(self, mocker: MockerFixture) -> None:
             record_time_mock = mocker.patch.object(PtymeClient, "_record_time")
 
-            client = PtymeClient("", self._watched_dirs, self._cur_times_path)
+            client = PtymeClient("", self._watched_dirs, [], self._cur_times_path)
             client._run_loop(None, False)
 
             record_time_mock.assert_called_once_with(mock.ANY)
@@ -58,7 +58,7 @@ class TestPtymeClient:
                 PtymeClient, "_get_files_hash_for_watched_dirs", return_value=prev_hash
             )
 
-            client = PtymeClient("", self._watched_dirs, self._cur_times_path)
+            client = PtymeClient("", self._watched_dirs, [], self._cur_times_path)
             client._run_loop(prev_hash, False)
 
             record_time_mock.assert_called_once_with(mock.ANY, stop=True)
@@ -71,7 +71,7 @@ class TestPtymeClient:
                 PtymeClient, "_get_files_hash_for_watched_dirs", return_value=prev_hash
             )
 
-            client = PtymeClient("", self._watched_dirs, self._cur_times_path)
+            client = PtymeClient("", self._watched_dirs, [], self._cur_times_path)
             client._run_loop(prev_hash, True)
 
             record_time_mock.assert_not_called()
@@ -80,7 +80,7 @@ class TestPtymeClient:
         def test_sets_last_update(self, mocker: MockerFixture) -> None:
             mocker.patch.object(PtymeClient, "_record_time")
 
-            client = PtymeClient("", self._watched_dirs, self._cur_times_path)
+            client = PtymeClient("", self._watched_dirs, [], self._cur_times_path)
             client._run_loop(None, False)
 
             # last update is used by get files hash
@@ -91,7 +91,7 @@ class TestPtymeClient:
         ) -> None:
             record_time_mock = mocker.patch.object(PtymeClient, "_record_time")
 
-            client = PtymeClient("", self._watched_dirs, self._cur_times_path)
+            client = PtymeClient("", self._watched_dirs, [], self._cur_times_path)
             prev_files_hash, stopped = client._run_loop(None, False)
             prev_files_hash, stopped = client._run_loop(prev_files_hash, stopped)
             client._run_loop(prev_files_hash, stopped)
@@ -103,7 +103,9 @@ class TestPtymeClient:
     class TestGetFilesHash(PtymeClientTestBase):
         @pytest.fixture(autouse=True)
         def setup_2(self) -> None:
-            self._client = PtymeClient("", self._watched_dirs, self._cur_times_path)
+            self._client = PtymeClient(
+                "", self._watched_dirs, ["node_modules", "__pycache__"], self._cur_times_path
+            )
             self._watched_dir = Path(self._watched_dirs[0])
             self._watched_dir.mkdir()
 
@@ -187,10 +189,21 @@ class TestPtymeClient:
             running_hash.update(b"some hash")
             assert running_hash.hexdigest() == result
 
+        def test_ignores_ignored_directories(self) -> None:
+            node_modules = self._watched_dir / "node_modules"
+            node_modules.mkdir()
+
+            inner_file = node_modules / "inner_file"
+            inner_file.write_text("Some value")
+
+            result = self._client._get_files_hash(self._watched_dir)
+
+            assert result == "d41d8cd98f00b204e9800998ecf8427e"
+
     class TestPerformRecordTime(PtymeClientTestBase):
         @freezegun.freeze_time("2020-01-02 03:04:05")
         def test_perform_record_time(self) -> None:
-            client = PtymeClient("", self._watched_dirs, self._cur_times_path)
+            client = PtymeClient("", self._watched_dirs, [], self._cur_times_path)
             self._cur_times_path.parent.mkdir()
 
             client._perform_record_time(SignedTime("server_id", "time", "sig"), "hash", False)
