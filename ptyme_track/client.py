@@ -95,10 +95,6 @@ class PtymeClient:
         for file in itertools.chain(watched_dir.glob(local_glob), watched_dir.glob(glob)):
             if file.is_file() and not str(file.name).startswith("."):
                 if not last_update or file.stat().st_mtime > last_update:
-                    if last_update:
-                        print(f"Found new/updated file {file}")
-                    else:
-                        print("last update not set")
                     count += 1
                     if count % COUNT_MOD == 0:
                         time.sleep(0.01)
@@ -108,8 +104,6 @@ class PtymeClient:
                     self._file_hash_cache[str(file)] = file_hash.hexdigest().encode("utf-8")
                 running_hash.update(self._file_hash_cache[str(file)])
         logger.debug(f"Hashed {count} files in {(time.time() - start):.1f} seconds")
-        # if count == 0:
-        #     return None
         return running_hash.hexdigest()
 
     def prep_ptyme_dir(self) -> None:

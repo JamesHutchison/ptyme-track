@@ -3,6 +3,8 @@ on:
   pull_request:
     # paths:
     #   - '.ptyme_track/*'
+permissions:
+  issues: write
 
 jobs:
   log_time:
