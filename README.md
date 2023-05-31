@@ -45,11 +45,7 @@ on:
 
 jobs:
   track-time:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: JamesHutchison/ptyme-track/.github/workflows/time_tracking.yaml
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          base-branch: origin/${{ github.event.pull_request.base.ref }}
-
+    uses: JamesHutchison/ptyme-track/.github/workflows/time_tracking.yaml
+    with:
+      base-branch: origin/${{ github.event.pull_request.base.ref }}
 ```

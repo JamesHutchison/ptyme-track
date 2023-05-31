@@ -65,7 +65,7 @@ jobs:
       - name: Comment on time spent
         uses: actions/github-script@v6
         env:
-          GITHUB_TOKEN: ${{ inputs.github-token }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           script: |
             const output = `${{ steps.run-command.outputs.stdout }}`;
