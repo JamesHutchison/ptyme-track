@@ -33,10 +33,10 @@ def get_time_blocks(
         if end_time_utc and signed_time.dt >= end_time_utc:
             continue
         considered.append(record)
-    return _build_time_blocks_from_records(considered, datetime.timedelta(minutes=buffer_minutes))
+    return build_time_blocks_from_records(considered, datetime.timedelta(minutes=buffer_minutes))
 
 
-def _build_time_blocks_from_records(
+def build_time_blocks_from_records(
     records: List[dict], buffer: datetime.timedelta
 ) -> List[TimeBlock]:
     sorted_signed_times: List[SignedTime] = sorted(

@@ -1,18 +1,20 @@
 import argparse
 import json
 import logging
+import os
 from datetime import timedelta
 from pathlib import Path
 
 from ptyme_track.cement import cement_cur_times
 from ptyme_track.client import PtymeClient, StandalonePtymeClient
+from ptyme_track.git_ci_diff import display_git_ci_diff_times
 from ptyme_track.ptyme_env import PTYME_WATCHED_DIRS, SERVER_URL
 from ptyme_track.secret import get_secret
 
 logging.basicConfig(level=logging.INFO)
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="ptyme_track")
     parser.add_argument(
         "--generate-secret", action="store_true", help="Generate a secret and update gitignore"
@@ -26,6 +28,9 @@ def main():
     parser.add_argument(
         "--standalone", action="store_true", help="Run as both a client and a server"
     )
+    parser.add_argument(
+        "--git-ci-times", action="store_true", help="Get the current times on this PR from git"
+    )
 
     args = parser.parse_args()
 
@@ -35,6 +40,12 @@ def main():
         run_forever()
     if args.cement:
         cement_cur_times(args.cement)
+        return
+    if args.git_ci_times:
+        base_branch = os.environ.get("PTYME_TRACK_BASE_BRANCH")
+        if not base_branch:
+            raise Exception("PTYME_TRACK_BASE_BRANCH environment variable not set.")
+        display_git_ci_diff_times(base_branch)
         return
     if args.generate_secret:
         from ptyme_track.server import generate_secret
