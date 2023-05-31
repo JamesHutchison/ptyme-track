@@ -109,7 +109,7 @@ class PtymeClient:
     def prep_ptyme_dir(self) -> None:
         track_dir = Path(PTYME_TRACK_DIR)
         if not track_dir.exists():
-            logger.info("Creating {PTYME_TRACK_DIR}")
+            logger.info(f"Creating {PTYME_TRACK_DIR}")
             track_dir.mkdir()
         git_ignore = track_dir / ".gitignore"
         if not git_ignore.exists():
