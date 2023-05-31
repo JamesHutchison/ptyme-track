@@ -6,7 +6,7 @@ on:
   #     - '.ptyme_track/*'
 
 jobs:
-  log time:
+  log_time:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
