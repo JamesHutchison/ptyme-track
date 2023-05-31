@@ -2,8 +2,10 @@ import argparse
 import json
 import logging
 import os
+import subprocess
 from datetime import timedelta
 from pathlib import Path
+from shutil import which
 
 from ptyme_track.cement import cement_cur_times
 from ptyme_track.client import PtymeClient, StandalonePtymeClient
@@ -39,7 +41,11 @@ def main() -> None:
 
         run_forever()
     if args.cement:
-        cement_cur_times(args.cement)
+        if which("git"):
+            git_branch = subprocess.getoutput("git branch --show-current").strip() or None
+        else:
+            git_branch = None
+        cement_cur_times(args.cement, git_branch=git_branch)
         return
     if args.git_ci_times:
         base_branch = os.environ.get("PTYME_TRACK_BASE_BRANCH")

@@ -145,10 +145,6 @@ class PtymeClient:
         self._record_time(files_hash, stop=True)
 
     def _perform_record_time(self, signed_time: SignedTime, hash: str, stop: bool) -> None:
-        if which("git"):
-            git_branch = subprocess.getoutput("git branch --show-current").strip() or None
-        else:
-            git_branch = None
         cur_time = datetime.datetime.utcnow()
         time_as_str = cur_time.strftime("%Y-%m-%d %H:%M:%S")
         with self._cur_times.open("a") as cur_time_log:
@@ -158,7 +154,6 @@ class PtymeClient:
                     "signed_time": asdict(signed_time),
                     "hash": hash,
                     "stop": stop,
-                    "git-branch": git_branch,
                 },
                 cur_time_log,
             )
