@@ -46,6 +46,8 @@ on:
 jobs:
   track-time:
     uses: JamesHutchison/ptyme-track/.github/workflows/time_tracking.yaml
+    permissions:
+      pull-requests: write
     with:
       base-branch: origin/${{ github.event.pull_request.base.ref }}
 ```
