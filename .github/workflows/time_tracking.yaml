@@ -3,11 +3,11 @@ on:
   pull_request:
     # paths:
     #   - '.ptyme_track/*'
-permissions:
-  issues: write
 
 jobs:
   log_time:
+    permissions:
+      issues: write
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
