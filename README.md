@@ -36,7 +36,7 @@ Total duration:  11:47:22
 
 Add this workflow:
 
-```
+```yaml
 name: Display tracked time
 jobs:
     track_time:
