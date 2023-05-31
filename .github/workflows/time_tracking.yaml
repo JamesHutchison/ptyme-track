@@ -1,4 +1,3 @@
-name: Get logged time
 on:
   workflow_call:
     inputs:
