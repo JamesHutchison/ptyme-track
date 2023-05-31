@@ -37,8 +37,18 @@ Total duration:  11:47:22
 Add this workflow:
 
 ```yaml
-name: Display tracked time
+name: Get logged time
+on:
+  pull_request:
+    paths:
+      - '.ptyme_track/*'
+
 jobs:
-    track_time:
-        uses: JamesHutchison/ptyme-track/.github/workflows/time_tracking.yaml
+  track-time:
+    uses: JamesHutchison/ptyme-track/.github/workflows/time_tracking.yaml
+    permissions:
+      pull-requests: write
+    with:
+      base-branch: origin/${{ github.event.pull_request.base.ref }}
+      pr-number: ${{ github.event.pull_request.number }}
 ```
