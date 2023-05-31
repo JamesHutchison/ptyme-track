@@ -33,7 +33,7 @@ class TestPtymeClient:
             side_effect=[(new_hash, stopped), StopIteration],
         )
 
-        client = PtymeClient("", ["a directory"], Path(""))
+        client = PtymeClient("", ["a directory"], [], Path(""))
 
         with pytest.raises(StopIteration):
             client.run_forever()
