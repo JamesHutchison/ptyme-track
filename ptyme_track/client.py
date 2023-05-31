@@ -20,19 +20,25 @@ from ptyme_track.server import sign_time
 from ptyme_track.signed_time import SignedTime
 
 COUNT_MOD = 10  # when to take a small break when hashing files
+IGNORED_COUNT_MOD = 1000  # when to take a small break when ignoring files
 
 logger = logging.getLogger(__name__)
 
 
 class PtymeClient:
     def __init__(
-        self, server_url: str, watched_dirs: List[str], cur_times: Path = CUR_TIMES_PATH
+        self,
+        server_url: str,
+        watched_dirs: List[str],
+        ignored_dirs: List[str],
+        cur_times: Path = CUR_TIMES_PATH,
     ) -> None:
         self.server_url = server_url
         self._file_hash_cache: Dict[str, bytes] = {}
         self._last_update: Union[float, None] = None
         self._watched_dirs = watched_dirs
         self._cur_times = cur_times
+        self._ignored_dirs = ignored_dirs
 
     def run_forever(self) -> None:
         print("Starting ptyme-track", flush=True)
@@ -87,6 +93,7 @@ class PtymeClient:
         # get the hash of all the files in the watched directory
         # use the built-in hashlib module
         count = 0
+        ignored_count = 0
         running_hash = hashlib.md5()
         last_update = self._last_update
         start = time.time()
@@ -94,15 +101,22 @@ class PtymeClient:
         glob = "[!.]*/**/[!.]*"
         for file in itertools.chain(watched_dir.glob(local_glob), watched_dir.glob(glob)):
             if file.is_file() and not str(file.name).startswith("."):
-                if not last_update or file.stat().st_mtime > last_update:
-                    count += 1
-                    if count % COUNT_MOD == 0:
-                        time.sleep(0.01)
-                    with file.open("rb") as f:
-                        file_hash = hashlib.md5()
-                        file_hash.update(f.read())
-                    self._file_hash_cache[str(file)] = file_hash.hexdigest().encode("utf-8")
-                running_hash.update(self._file_hash_cache[str(file)])
+                for ignored_dir in self._ignored_dirs:
+                    if ignored_dir in str(file):
+                        ignored_count += 1
+                        if ignored_count % IGNORED_COUNT_MOD == 0:
+                            time.sleep(0.01)
+                        break
+                else:
+                    if not last_update or file.stat().st_mtime > last_update:
+                        count += 1
+                        if count % COUNT_MOD == 0:
+                            time.sleep(0.01)
+                        with file.open("rb") as f:
+                            file_hash = hashlib.md5()
+                            file_hash.update(f.read())
+                        self._file_hash_cache[str(file)] = file_hash.hexdigest().encode("utf-8")
+                    running_hash.update(self._file_hash_cache[str(file)])
         logger.debug(f"Hashed {count} files in {(time.time() - start):.1f} seconds")
         return running_hash.hexdigest()
 
@@ -145,8 +159,8 @@ class PtymeClient:
 
 
 class StandalonePtymeClient(PtymeClient):
-    def __init__(self, watched_dirs: List[str]) -> None:
-        super().__init__("", watched_dirs)
+    def __init__(self, watched_dirs: List[str], ignored_dirs: List[str]) -> None:
+        super().__init__("", watched_dirs, ignored_dirs)
 
     def _retrieve_signed_time(self) -> SignedTime:
         return sign_time()

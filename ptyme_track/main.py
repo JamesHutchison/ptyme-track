@@ -31,6 +31,11 @@ def main() -> None:
     parser.add_argument(
         "--git-ci-times", action="store_true", help="Get the current times on this PR from git"
     )
+    parser.add_argument(
+        "--ignore-dirs",
+        default="node_modules:__pycache__",
+        help="Colon separated (sub)directories to ignore",
+    )
 
     args = parser.parse_args()
 
@@ -72,9 +77,9 @@ def main() -> None:
         return
     watched_dirs = PTYME_WATCHED_DIRS.split(":")
     if args.client:
-        client = PtymeClient(SERVER_URL, watched_dirs)
+        client = PtymeClient(SERVER_URL, watched_dirs, args.ignored_dirs.split(":"))
     elif args.standalone:
-        client = StandalonePtymeClient(watched_dirs)
+        client = StandalonePtymeClient(watched_dirs, args.ignored_dirs.split(":"))
     else:
         parser.print_help()
         return
