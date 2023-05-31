@@ -22,14 +22,15 @@ jobs:
           poetry install --no-interaction
       - name: Do poetry install
         run: poetry install
+      - name: Fetch from git
+        run: |
+          git fetch --depth=1 origin
       - name: Run command and save output
         id: run-command
+        uses: mathiasvr/command-output@v1
         env:
           PTYME_TRACK_BASE_BRANCH: origin/${{ github.event.pull_request.base.ref }}
         run: |
-          echo "<< $PTYME_TRACK_BASE_BRANCH >>"
-          git fetch --depth=1 origin
-          git diff --unified=0 --output-indicator-new=+ origin/main -- .ptyme_track
           poetry run ptyme-track --git-ci-times
       - name: Comment on time spent
         uses: actions/github-script@v6
