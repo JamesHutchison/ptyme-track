@@ -27,7 +27,7 @@ jobs:
         id: run-command
         uses: mathiasvr/command-output@v2.0.0
         env:
-          PTYME_TRACK_BASE_BRANCH:
+          PTYME_TRACK_BASE_BRANCH: origin/${{ github.event.pull_request.base.ref }}
         with:
           run: poetry run ptyme-track --git-ci-times
       - name: Comment on time spent
