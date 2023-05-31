@@ -95,6 +95,8 @@ class PtymeClient:
         for file in itertools.chain(watched_dir.glob(local_glob), watched_dir.glob(glob)):
             if file.is_file() and not str(file.name).startswith("."):
                 if not last_update or file.stat().st_mtime > last_update:
+                    if last_update:
+                        print(f"Found new/updated file {file}")
                     count += 1
                     if count % COUNT_MOD == 0:
                         time.sleep(0.01)
