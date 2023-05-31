@@ -25,6 +25,7 @@ jobs:
           PTYME_TRACK_BASE_BRANCH: ${{ github.event.pull_request.base.ref }}
         run: |
           echo "<< $PTYME_TRACK_BASE_BRANCH >>"
+          git fetch origin "$PTYME_TRACK_BASE_BRANCH"
           git diff --unified=0 --output-indicator-new=+ main -- .ptyme_track
           poetry run ptyme-track --git-ci-times
       - name: Comment on time spent
