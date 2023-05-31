@@ -1,8 +1,8 @@
 on:
   pull_request:
     types: [opened, synchronized]
-    paths:
-      - '.ptyme_track/*'
+    # paths:
+    #   - '.ptyme_track/*'
 
 jobs:
   log time:
@@ -13,10 +13,11 @@ jobs:
       - name: Do poetry install
         run: poetry install
       - name: Run command and save output
+        id: run-command
         env:
           PTYME_TRACK_BASE_BRANCH: ${{ github.base_ref_name }}
         run: |
-          output=$(ptyme-track --git-ci-times)
+          ptyme-track --git-ci-times
       - name: Comment on time spent
         uses: actions/github-script@v4
         env:
