@@ -5,12 +5,10 @@ import hashlib
 import itertools
 import json
 import logging
-import subprocess
 import time
 import urllib.request
 from dataclasses import asdict
 from pathlib import Path
-from shutil import which
 from typing import Dict, Iterator, List, Optional, Tuple, Union
 
 from ptyme_track.cur_times import CUR_TIMES_FILE, CUR_TIMES_PATH
