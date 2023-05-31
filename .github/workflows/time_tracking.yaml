@@ -3,7 +3,7 @@ on:
     types: [opened]
 
 jobs:
-  add-comment:
+  log time:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -11,10 +11,11 @@ jobs:
       - name: Do poetry install
         run: poetry install
       - name: Run command and save output
-        env: PTYME_TRACK_BASE_BRANCH=${{ github.base_ref_name }}
+        env:
+          PTYME_TRACK_BASE_BRANCH: ${{ github.base_ref_name }}
         run: |
           output=$(ptyme-track --git-ci-times)
-      - name: Add comment to PR
+      - name: Comment on time spent
         uses: actions/github-script@v4
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
