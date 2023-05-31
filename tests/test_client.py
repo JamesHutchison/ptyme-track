@@ -45,7 +45,7 @@ class TestPtymeClient:
         def test_with_empty_watched_dir(self, mocker: MockerFixture) -> None:
             record_time_mock = mocker.patch.object(PtymeClient, "_record_time")
 
-            client = PtymeClient("", self._watched_dirs, self._cur_times_path)
+            client = PtymeClient("", self._watched_dirs, [], self._cur_times_path)
             client._run_loop(None, False)
 
             record_time_mock.assert_called_once_with(mock.ANY)
@@ -58,7 +58,7 @@ class TestPtymeClient:
                 PtymeClient, "_get_files_hash_for_watched_dirs", return_value=prev_hash
             )
 
-            client = PtymeClient("", self._watched_dirs, self._cur_times_path)
+            client = PtymeClient("", self._watched_dirs, [], self._cur_times_path)
             client._run_loop(prev_hash, False)
 
             record_time_mock.assert_called_once_with(mock.ANY, stop=True)
@@ -71,7 +71,7 @@ class TestPtymeClient:
                 PtymeClient, "_get_files_hash_for_watched_dirs", return_value=prev_hash
             )
 
-            client = PtymeClient("", self._watched_dirs, self._cur_times_path)
+            client = PtymeClient("", self._watched_dirs, [], self._cur_times_path)
             client._run_loop(prev_hash, True)
 
             record_time_mock.assert_not_called()
@@ -80,7 +80,7 @@ class TestPtymeClient:
         def test_sets_last_update(self, mocker: MockerFixture) -> None:
             mocker.patch.object(PtymeClient, "_record_time")
 
-            client = PtymeClient("", self._watched_dirs, self._cur_times_path)
+            client = PtymeClient("", self._watched_dirs, [], self._cur_times_path)
             client._run_loop(None, False)
 
             # last update is used by get files hash
@@ -91,7 +91,7 @@ class TestPtymeClient:
         ) -> None:
             record_time_mock = mocker.patch.object(PtymeClient, "_record_time")
 
-            client = PtymeClient("", self._watched_dirs, self._cur_times_path)
+            client = PtymeClient("", self._watched_dirs, [], self._cur_times_path)
             prev_files_hash, stopped = client._run_loop(None, False)
             prev_files_hash, stopped = client._run_loop(prev_files_hash, stopped)
             client._run_loop(prev_files_hash, stopped)
