@@ -49,7 +49,7 @@ class MyRequestHandler(BaseHTTPRequestHandler):
 
 
 def validate_signed_time(incoming_signed_time: SignedTime) -> dict:
-    return validate_signed_time_given_secret(SERVER_ID, get_secret(), incoming_signed_time)
+    return validate_signed_time_given_secret(get_secret(), incoming_signed_time)
 
 
 def sign_time() -> SignedTime:
@@ -71,7 +71,7 @@ def run_forever(server_class=HTTPServer, handler_class=MyRequestHandler) -> None
     httpd.serve_forever()
 
 
-def generate_secret():
+def generate_secret() -> None:
     with open(SECRET_PATH, "w") as f:
         f.write(str(uuid.uuid4()))
     git_ignore = Path(".gitignore")
