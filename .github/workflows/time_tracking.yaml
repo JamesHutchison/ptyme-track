@@ -26,15 +26,17 @@ jobs:
       - name: Run command and save output
         id: run-command
         uses: mathiasvr/command-output@v2.0.0
+        env:
+          PTYME_TRACK_BASE_BRANCH:
         with:
-          run: PTYME_TRACK_BASE_BRANCH=origin/${{ github.event.pull_request.base.ref }} poetry run ptyme-track --git-ci-times
+          run: poetry run ptyme-track --git-ci-times
       - name: Comment on time spent
         uses: actions/github-script@v6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           script: |
-            const output = '${{ steps.run-command.outputs.stdout }}';
+            const output = `${{ steps.run-command.outputs.stdout }}`;
             const comment = await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
