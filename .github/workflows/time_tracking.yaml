@@ -1,9 +1,6 @@
 on:
   workflow_call:
     inputs:
-      github-token:
-        required: true
-        type: string
       base-branch:
         required: true
         type: string
