@@ -20,7 +20,8 @@ jobs:
       with:
         fetch-depth: 2
         ref: refs/pull/${{ inputs.pr-number }}/head
-
+    - name: Install ptyme-track
+      run: pip install git+https://github.com/JamesHutchison/ptyme-track
     - name: Get changed files
       id: check_changes
       run: |
