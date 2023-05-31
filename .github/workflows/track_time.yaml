@@ -1,8 +1,8 @@
 name: Get logged time
 on:
   pull_request:
-    paths:
-      - '.ptyme_track/*'
+    # paths:
+    #   - '.ptyme_track/*'
 
 jobs:
   track-time:
