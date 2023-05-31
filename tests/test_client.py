@@ -27,11 +27,10 @@ class TestPtymeClient:
     def test_run_forever_feeds_run_loop_returned_values(self, mocker: MockerFixture) -> None:
         new_hash = "new hash"
         stopped = False
-        rolling_hash = hashlib.md5()
         run_loop_mock = mocker.patch.object(
             PtymeClient,
             "_run_loop",
-            side_effect=[(new_hash, stopped, rolling_hash), StopIteration],
+            side_effect=[(new_hash, stopped), StopIteration],
         )
 
         client = PtymeClient("", ["a directory"], Path(""))
@@ -40,14 +39,14 @@ class TestPtymeClient:
             client.run_forever()
 
         assert run_loop_mock.call_count == 2
-        run_loop_mock.assert_called_with(new_hash, stopped, rolling_hash)
+        run_loop_mock.assert_called_with(new_hash, stopped)
 
     class TestRunLoop(PtymeClientTestBase):
         def test_with_empty_watched_dir(self, mocker: MockerFixture) -> None:
             record_time_mock = mocker.patch.object(PtymeClient, "_record_time")
 
             client = PtymeClient("", self._watched_dirs, self._cur_times_path)
-            client._run_loop(None, False, hashlib.md5())
+            client._run_loop(None, False)
 
             record_time_mock.assert_called_once_with(mock.ANY)
 
@@ -60,7 +59,7 @@ class TestPtymeClient:
             )
 
             client = PtymeClient("", self._watched_dirs, self._cur_times_path)
-            client._run_loop(prev_hash, False, hashlib.md5())
+            client._run_loop(prev_hash, False)
 
             record_time_mock.assert_called_once_with(mock.ANY, stop=True)
 
@@ -73,7 +72,7 @@ class TestPtymeClient:
             )
 
             client = PtymeClient("", self._watched_dirs, self._cur_times_path)
-            client._run_loop(prev_hash, True, hashlib.md5())
+            client._run_loop(prev_hash, True)
 
             record_time_mock.assert_not_called()
 
@@ -82,10 +81,24 @@ class TestPtymeClient:
             mocker.patch.object(PtymeClient, "_record_time")
 
             client = PtymeClient("", self._watched_dirs, self._cur_times_path)
-            client._run_loop(None, False, hashlib.md5())
+            client._run_loop(None, False)
 
             # last update is used by get files hash
             assert client._last_update == 1577934245.0
+
+        def test_when_no_updates_does_not_record_multiple_times(
+            self, mocker: MockerFixture
+        ) -> None:
+            record_time_mock = mocker.patch.object(PtymeClient, "_record_time")
+
+            client = PtymeClient("", self._watched_dirs, self._cur_times_path)
+            prev_files_hash, stopped = client._run_loop(None, False)
+            prev_files_hash, stopped = client._run_loop(prev_files_hash, stopped)
+            client._run_loop(prev_files_hash, stopped)
+
+            # stops on second call
+            assert record_time_mock.call_count == 2
+            assert stopped is True
 
     class TestGetFilesHash(PtymeClientTestBase):
         @pytest.fixture(autouse=True)

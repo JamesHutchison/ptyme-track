@@ -38,17 +38,14 @@ class PtymeClient:
         print("Starting ptyme-track", flush=True)
         prev_files_hash = None
         stopped = False
-        rolling_hash = hashlib.md5()
         while True:
-            prev_files_hash, stopped, rolling_hash = self._run_loop(
-                prev_files_hash, stopped, rolling_hash
-            )
+            prev_files_hash, stopped = self._run_loop(prev_files_hash, stopped)
 
     def _run_loop(
-        self, prev_files_hash: Optional[str], stopped: bool, rolling_hash: hashlib._Hash
-    ) -> Tuple[Union[str, None], bool, hashlib._Hash]:
+        self, prev_files_hash: Optional[str], stopped: bool
+    ) -> Tuple[Union[str, None], bool]:
         start = time.time()
-        files_hash = self._get_files_hash_for_watched_dirs(rolling_hash)
+        files_hash = self._get_files_hash_for_watched_dirs()
         # _last_update should be set BEFORE the hash is calculated to avoid a race condition
         self._last_update = start
         stopped = self._record_time_or_stop(files_hash, prev_files_hash, stopped)
@@ -59,11 +56,14 @@ class PtymeClient:
         cur_time = time.time()
         if cur_time < next_time:
             self._perform_sleep(next_time - cur_time)
-        return prev_files_hash, stopped, rolling_hash
+        return prev_files_hash, stopped
 
-    def _get_files_hash_for_watched_dirs(self, rolling_hash: hashlib._Hash) -> str:
+    def _get_files_hash_for_watched_dirs(self) -> str:
+        rolling_hash = hashlib.md5()
         for watched_dir in self._get_watched_dirs():
-            rolling_hash.update(self._get_files_hash(watched_dir).encode("utf-8"))
+            result = self._get_files_hash(watched_dir)
+            if result:
+                rolling_hash.update(result.encode("utf-8"))
         return rolling_hash.hexdigest()
 
     def _record_time_or_stop(
@@ -83,7 +83,7 @@ class PtymeClient:
         for path in self._watched_dirs:
             yield Path(path)
 
-    def _get_files_hash(self, watched_dir: Path) -> str:
+    def _get_files_hash(self, watched_dir: Path) -> Union[None, str]:
         # get the hash of all the files in the watched directory
         # use the built-in hashlib module
         count = 0

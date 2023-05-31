@@ -29,9 +29,10 @@ def display_git_ci_diff_times(base_branch: str) -> None:
         total_time = datetime.timedelta(minutes=0)
         for block in time_blocks:
             total_time += block.duration
-        print(f"{user}: {total_time}")
+        # this is plugged into javascript, so remove backticks
+        print(f"{user.replace('`', '')}: {total_time}")
 
-    print("Ptyme Track time logged:")
+    print("Ptyme Track total time logged:")
 
     for line in output.splitlines():
         if line.startswith("+++"):
