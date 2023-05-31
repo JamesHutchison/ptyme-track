@@ -1,4 +1,4 @@
-name: Get logged time
+# name: Get logged time
 on:
   pull_request:
     # paths:
@@ -6,8 +6,8 @@ on:
 
 jobs:
   log_time:
-    # permissions:
-    #   issues: write
+    permissions:
+      issues: write
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
