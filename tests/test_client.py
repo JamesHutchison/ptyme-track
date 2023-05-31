@@ -1,3 +1,4 @@
+import datetime
 import hashlib
 import json
 from pathlib import Path
@@ -153,10 +154,25 @@ class TestPtymeClient:
             assert result == "231ce651470e28a49815b51ff3e0d5a3"
 
         def test_sets_file_cache(self) -> None:
-            pass
+            inner_file = self._watched_dir / "some_file"
+            inner_file.write_text("Some value")
+
+            self._client._get_files_hash(self._watched_dir)
+
+            assert str(inner_file) in self._client._file_hash_cache
 
         def test_uses_files_cache(self) -> None:
-            pass
+            inner_file = self._watched_dir / "some_file"
+            inner_file.write_text("Some value")
+
+            self._client._last_update = datetime.datetime.now().timestamp() + 1000
+            self._client._file_hash_cache[str(inner_file)] = b"some hash"
+
+            result = self._client._get_files_hash(self._watched_dir)
+
+            running_hash = hashlib.md5()
+            running_hash.update(b"some hash")
+            assert running_hash.hexdigest() == result
 
     class TestPerformRecordTime(PtymeClientTestBase):
         @freezegun.freeze_time("2020-01-02 03:04:05")
