@@ -6,7 +6,7 @@ The obnoxiously hard to spell time tracking based on file modifications and sign
 ### Server / client
 Simply run the server with `ptyme_track --server`
 
-For the client, use ptyme_track --client
+For the client, use `ptyme_track --client`
 
 ### Running locally
 Simply run `ptyme_track --standalone` in the background.
