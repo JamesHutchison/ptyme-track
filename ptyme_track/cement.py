@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 from typing import Optional, Union
 
-from ptyme_track.cur_times import CUR_TIMES_PATH
+from ptyme_track.cur_times import CEMENTED_PATH, CUR_TIMES_PATH
 from ptyme_track.ptyme_env import PTYME_TRACK_DIR
 
 
@@ -19,9 +19,14 @@ def cement_cur_times(
     with cur_times_path.open() as f:
         cur_times = f.readlines()
     target_file = Path(PTYME_TRACK_DIR) / target_file
+    record = None
     with target_file.open("a") as f:
         for line in cur_times:
             record = json.loads(line)
             record["git-branch"] = git_branch
             f.write(json.dumps(record) + "\n")
     cur_times_path.open("w").close()
+
+    if record:
+        last_hash = record["hash"]
+        Path(CEMENTED_PATH).write_text(last_hash)
