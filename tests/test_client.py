@@ -24,9 +24,12 @@ class PtymeClientTestBase:
 
 
 class TestPtymeClient:
-    def test_run_forever_feeds_run_loop_returned_values(self, mocker: MockerFixture) -> None:
+    def test_run_forever_feeds_run_loop_returned_values(
+        self, mocker: MockerFixture, tmp_path: Path
+    ) -> None:
         new_hash = "new hash"
         stopped = False
+        freshly_cemented = False
         run_loop_mock = mocker.patch.object(
             PtymeClient,
             "_run_loop",
@@ -36,10 +39,34 @@ class TestPtymeClient:
         client = PtymeClient("", ["a directory"], [], Path(""))
 
         with pytest.raises(StopIteration):
-            client.run_forever()
+            client.run_forever(
+                tmp_path / "cemented",
+            )
 
         assert run_loop_mock.call_count == 2
-        run_loop_mock.assert_called_with(new_hash, stopped)
+        run_loop_mock.assert_called_with(new_hash, stopped, freshly_cemented)
+
+    def test_run_forever_clears_cemented(self, mocker: MockerFixture, tmp_path: Path) -> None:
+        new_hash = "new hash"
+        stopped = True
+        run_loop_mock = mocker.patch.object(
+            PtymeClient,
+            "_run_loop",
+            side_effect=[(new_hash, True), (new_hash, True), StopIteration],
+        )
+
+        client = PtymeClient("", ["a directory"], [], Path(""))
+        cemented_path = tmp_path / "cemented"
+        cemented_path.write_text(new_hash)
+
+        with pytest.raises(StopIteration):
+            client.run_forever(
+                cemented_path,
+            )
+
+        run_loop_mock.assert_has_calls(
+            [mock.call(new_hash, stopped, True), mock.call(new_hash, stopped, False)]
+        )
 
     class TestRunLoop(PtymeClientTestBase):
         def test_with_empty_watched_dir(self, mocker: MockerFixture) -> None:
@@ -99,6 +126,34 @@ class TestPtymeClient:
             # stops on second call
             assert record_time_mock.call_count == 2
             assert stopped is True
+
+        def test_when_freshly_cemented_records_nothing(self, mocker: MockerFixture) -> None:
+            record_time_mock = mocker.patch.object(PtymeClient, "_record_time")
+
+            client = PtymeClient("", self._watched_dirs, [], self._cur_times_path)
+            prev_files_hash, stopped = client._run_loop(None, True, True)
+
+            # stops on second call
+            assert record_time_mock.call_count == 0
+            assert prev_files_hash == "74be16979710d4c4e7c6647856088456"
+            assert stopped is True
+
+        def test_recovers_from_being_freshly_cemented(self, mocker: MockerFixture) -> None:
+            record_time_mock = mocker.patch.object(PtymeClient, "_record_time")
+
+            client = PtymeClient("", self._watched_dirs, [], self._cur_times_path)
+            prev_files_hash, stopped = client._run_loop(None, True, True)
+
+            self._watched_path.mkdir()
+            new_file = self._watched_path / "something_new"
+            new_file.write_text("new stuff")
+
+            prev_files_hash, stopped = client._run_loop(prev_files_hash, True, False)
+
+            # stops on second call
+            assert record_time_mock.call_count == 1
+            assert prev_files_hash == "76aaec7943a73f3174a72c3fa49d7907"
+            assert stopped is False
 
     class TestGetFilesHash(PtymeClientTestBase):
         @pytest.fixture(autouse=True)
