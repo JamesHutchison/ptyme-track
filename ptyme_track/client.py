@@ -11,7 +11,7 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Dict, Iterator, List, Optional, Tuple, Union
 
-from ptyme_track.cur_times import CEMENTED_PATH, CUR_TIMES_FILE, CUR_TIMES_PATH
+from ptyme_track.cur_times import CEMENTED_PATH, CUR_TIMES_PATH
 from ptyme_track.ptyme_env import (
     PTYME_TRACK_DIR,
     PTYME_WATCH_INTERVAL_MIN,
