@@ -3,6 +3,9 @@ The obnoxiously hard to spell time tracking based on file modifications and sign
 
 ## Usage
 
+### Installation
+`pip install ptyme-track`
+
 ### Server / client
 Simply run the server with `ptyme_track --server`
 
