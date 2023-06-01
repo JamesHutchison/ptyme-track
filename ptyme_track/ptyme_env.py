@@ -5,6 +5,7 @@ import uuid
 PTYME_TRACK_DIR = os.environ.get("PTYME_TRACK_DIR", ".ptyme_track")
 # colon seperated dirs
 PTYME_WATCHED_DIRS = os.environ.get("PTYME_WATCHED_DIRS", ".")
+PTYME_IGNORED_DIRS = os.environ.get("PTYME_IGNORED_DIRS", "node_modules:__pycache__")
 PTYME_WATCH_INTERVAL_MIN = int(os.environ.get("PTYME_WATCH_INTERVAL_MIN", "2"))
 ######
 

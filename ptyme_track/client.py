@@ -11,7 +11,7 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Dict, Iterator, List, Optional, Tuple, Union
 
-from ptyme_track.cur_times import CUR_TIMES_FILE, CUR_TIMES_PATH
+from ptyme_track.cur_times import CEMENTED_PATH, CUR_TIMES_PATH
 from ptyme_track.ptyme_env import (
     PTYME_TRACK_DIR,
     PTYME_WATCH_INTERVAL_MIN,
@@ -44,7 +44,12 @@ class PtymeClient:
         print("Starting ptyme-track", flush=True)
         prev_files_hash = None
         stopped = False
+        cemented_file = Path(CEMENTED_PATH)
         while True:
+            if cemented_file.exists():
+                prev_files_hash = cemented_file.read_text().strip()
+                stopped = True
+                cemented_file.unlink()
             prev_files_hash, stopped = self._run_loop(prev_files_hash, stopped)
 
     def _run_loop(
@@ -127,7 +132,7 @@ class PtymeClient:
             track_dir.mkdir()
         git_ignore = track_dir / ".gitignore"
         if not git_ignore.exists():
-            git_ignore.write_text(str(CUR_TIMES_FILE))
+            git_ignore.write_text("!.gitignore\n.*")
 
     def _retrieve_signed_time(self) -> SignedTime:
         # retrieve the current time from the server using the built-in urllib module

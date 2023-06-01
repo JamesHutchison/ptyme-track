@@ -2,13 +2,15 @@ import argparse
 import json
 import logging
 import os
+import subprocess
 from datetime import timedelta
 from pathlib import Path
+from shutil import which
 
 from ptyme_track.cement import cement_cur_times
 from ptyme_track.client import PtymeClient, StandalonePtymeClient
 from ptyme_track.git_ci_diff import display_git_ci_diff_times
-from ptyme_track.ptyme_env import PTYME_WATCHED_DIRS, SERVER_URL
+from ptyme_track.ptyme_env import PTYME_IGNORED_DIRS, PTYME_WATCHED_DIRS, SERVER_URL
 from ptyme_track.secret import get_secret
 
 logging.basicConfig(level=logging.INFO)
@@ -31,11 +33,6 @@ def main() -> None:
     parser.add_argument(
         "--git-ci-times", action="store_true", help="Get the current times on this PR from git"
     )
-    parser.add_argument(
-        "--ignore-dirs",
-        default="node_modules:__pycache__",
-        help="Colon separated (sub)directories to ignore",
-    )
 
     args = parser.parse_args()
 
@@ -44,7 +41,11 @@ def main() -> None:
 
         run_forever()
     if args.cement:
-        cement_cur_times(args.cement)
+        if which("git"):
+            git_branch = subprocess.getoutput("git branch --show-current").strip() or None
+        else:
+            git_branch = None
+        cement_cur_times(args.cement, git_branch=git_branch)
         return
     if args.git_ci_times:
         base_branch = os.environ.get("PTYME_TRACK_BASE_BRANCH")
@@ -76,10 +77,11 @@ def main() -> None:
         print("Total duration: ", total_time)
         return
     watched_dirs = PTYME_WATCHED_DIRS.split(":")
+    ignored_dirs = PTYME_IGNORED_DIRS.split(":")
     if args.client:
-        client = PtymeClient(SERVER_URL, watched_dirs, args.ignored_dirs.split(":"))
+        client = PtymeClient(SERVER_URL, watched_dirs, ignored_dirs)
     elif args.standalone:
-        client = StandalonePtymeClient(watched_dirs, args.ignored_dirs.split(":"))
+        client = StandalonePtymeClient(watched_dirs, ignored_dirs)
     else:
         parser.print_help()
         return
