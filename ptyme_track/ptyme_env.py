@@ -18,3 +18,8 @@ SECRET = os.environ.get("PTYME_SERVER_SECRET", str(uuid.uuid4()))
 
 ### used by both client and server ###
 SERVER_URL = os.environ.get("PTYME_SERVER_URL", "http://localhost:8941")
+
+### git ci diff ###
+PTYME_TRACK_BASE_BRANCH = os.environ.get("PTYME_TRACK_BASE_BRANCH")
+PTYME_TRACK_FEATURE_BRANCH = os.environ.get("PTYME_TRACK_FEATURE_BRANCH")
+#######

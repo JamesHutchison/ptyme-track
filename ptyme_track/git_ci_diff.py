@@ -68,7 +68,7 @@ def display_git_ci_diff_times(base_branch: str, feature_branch: Optional[str] = 
                 records.append(record)
                 if (
                     feature_branch
-                    and branch_records
+                    and branch_records is not None
                     and record.get("git-branch") == feature_branch
                 ):
                     branch_records.append(record)
