@@ -40,26 +40,29 @@ class PtymeClient:
         self._cur_times = cur_times
         self._ignored_dirs = ignored_dirs
 
-    def run_forever(self) -> None:
+    def run_forever(self, cemented_file=Path(CEMENTED_PATH)) -> None:
         print("Starting ptyme-track", flush=True)
         prev_files_hash = None
         stopped = False
-        cemented_file = Path(CEMENTED_PATH)
+        freshly_cemented = False
         while True:
             if cemented_file.exists():
                 prev_files_hash = cemented_file.read_text().strip()
                 stopped = True
                 cemented_file.unlink()
-            prev_files_hash, stopped = self._run_loop(prev_files_hash, stopped)
+                freshly_cemented = True
+            prev_files_hash, stopped = self._run_loop(prev_files_hash, stopped, freshly_cemented)
+            freshly_cemented = False
 
     def _run_loop(
-        self, prev_files_hash: Optional[str], stopped: bool
+        self, prev_files_hash: Optional[str], stopped: bool, freshly_cemented: bool = False
     ) -> Tuple[Union[str, None], bool]:
         start = time.time()
         files_hash = self._get_files_hash_for_watched_dirs()
         # _last_update should be set BEFORE the hash is calculated to avoid a race condition
         self._last_update = start
-        stopped = self._record_time_or_stop(files_hash, prev_files_hash, stopped)
+        if not freshly_cemented:
+            stopped = self._record_time_or_stop(files_hash, prev_files_hash, stopped)
         prev_files_hash = files_hash
         end = time.time()
         logger.debug(f"Hash took {(end - start):.1f} seconds")
@@ -113,7 +116,11 @@ class PtymeClient:
                             time.sleep(0.01)
                         break
                 else:
-                    if not last_update or file.stat().st_mtime > last_update:
+                    if (
+                        not last_update
+                        or str(file) not in self._file_hash_cache
+                        or file.stat().st_mtime > last_update
+                    ):
                         count += 1
                         if count % COUNT_MOD == 0:
                             time.sleep(0.01)
