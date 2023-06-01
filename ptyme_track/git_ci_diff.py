@@ -21,8 +21,6 @@ def display_git_ci_diff_times(base_branch: str, feature_branch: Optional[str] = 
     records: Union[list, None] = None
     branch_records: Union[list, None] = None
 
-    print(f"Feature branch: {feature_branch}")
-
     def display_user_info(
         user: Optional[str], records: Optional[List[dict]], branch_records: Optional[List[dict]]
     ) -> None:
@@ -68,7 +66,6 @@ def display_git_ci_diff_times(base_branch: str, feature_branch: Optional[str] = 
             if records is not None:
                 record: dict = json.loads(line[1:])
                 records.append(record)
-                print(feature_branch, record.get("git-branch"))
                 if (
                     feature_branch
                     and branch_records is not None
