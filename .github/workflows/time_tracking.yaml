@@ -60,7 +60,6 @@ jobs:
         with:
           run: |
             export PTYME_TRACK_FEATURE_BRANCH=$GITHUB_HEAD_REF
-            echo $PTYME_TRACK_FEATURE_BRANCH
             ptyme-track --git-ci-times
       - name: Comment on time spent
         uses: actions/github-script@v6
