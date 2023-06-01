@@ -45,7 +45,7 @@ on:
 
 jobs:
   track-time:
-    uses: JamesHutchison/ptyme-track/.github/workflows/time_tracking.yaml
+    uses: JamesHutchison/ptyme-track/.github/workflows/time_tracking.yaml@main
     permissions:
       pull-requests: write
     with:
