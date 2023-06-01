@@ -51,7 +51,8 @@ def main() -> None:
         base_branch = os.environ.get("PTYME_TRACK_BASE_BRANCH")
         if not base_branch:
             raise Exception("PTYME_TRACK_BASE_BRANCH environment variable not set.")
-        display_git_ci_diff_times(base_branch)
+        feature_branch = os.environ.get("PTYME_TRACK_FEATURE_BRANCH")
+        display_git_ci_diff_times(base_branch, feature_branch)
         return
     if args.generate_secret:
         from ptyme_track.server import generate_secret

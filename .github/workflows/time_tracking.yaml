@@ -57,6 +57,7 @@ jobs:
         uses: mathiasvr/command-output@v2.0.0
         env:
           PTYME_TRACK_BASE_BRANCH: ${{ inputs.base-branch }}
+          PTYME_TRACK_FEATURE_BRANCH: $GITHUB_HEAD_REF
         with:
           run: ptyme-track --git-ci-times
       - name: Comment on time spent
