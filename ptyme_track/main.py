@@ -1,7 +1,6 @@
 import argparse
 import json
 import logging
-import os
 import subprocess
 from datetime import timedelta
 from pathlib import Path
@@ -10,7 +9,13 @@ from shutil import which
 from ptyme_track.cement import cement_cur_times
 from ptyme_track.client import PtymeClient, StandalonePtymeClient
 from ptyme_track.git_ci_diff import display_git_ci_diff_times
-from ptyme_track.ptyme_env import PTYME_IGNORED_DIRS, PTYME_WATCHED_DIRS, SERVER_URL
+from ptyme_track.ptyme_env import (
+    PTYME_IGNORED_DIRS,
+    PTYME_TRACK_BASE_BRANCH,
+    PTYME_TRACK_FEATURE_BRANCH,
+    PTYME_WATCHED_DIRS,
+    SERVER_URL,
+)
 from ptyme_track.secret import get_secret
 
 logging.basicConfig(level=logging.INFO)
@@ -48,10 +53,11 @@ def main() -> None:
         cement_cur_times(args.cement, git_branch=git_branch)
         return
     if args.git_ci_times:
-        base_branch = os.environ.get("PTYME_TRACK_BASE_BRANCH")
+        base_branch = PTYME_TRACK_BASE_BRANCH
         if not base_branch:
             raise Exception("PTYME_TRACK_BASE_BRANCH environment variable not set.")
-        display_git_ci_diff_times(base_branch)
+        feature_branch = PTYME_TRACK_FEATURE_BRANCH
+        display_git_ci_diff_times(base_branch, feature_branch)
         return
     if args.generate_secret:
         from ptyme_track.server import generate_secret
