@@ -26,6 +26,8 @@ jobs:
     - name: Setup Poetry
       # You may pin to the exact commit or the version.
       uses: Gr1N/setup-poetry@12c727a3dcf8c1a548d8d041c9d5ef5cebb3ba2e
+    - name: poetry install
+      run: poetry install --with=dev
     - name: test
       run: poetry run pytest
     - name: Build distributions
