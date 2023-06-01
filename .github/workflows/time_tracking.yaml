@@ -59,7 +59,10 @@ jobs:
           PTYME_TRACK_BASE_BRANCH: ${{ inputs.base-branch }}
           PTYME_TRACK_FEATURE_BRANCH: $GITHUB_HEAD_REF
         with:
-          run: ptyme-track --git-ci-times
+          run: |
+            echo $GITHUB_HEAD_REF
+            echo $PTYME_TRACK_FEATURE_BRANCH
+            ptyme-track --git-ci-times
       - name: Comment on time spent
         uses: actions/github-script@v6
         env:
