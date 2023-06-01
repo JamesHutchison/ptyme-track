@@ -9,6 +9,7 @@ from ptyme_track.ptyme_env import PTYME_TRACK_DIR
 def cement_cur_times(
     target_file: Union[Path, str],
     cur_times_path: Path = CUR_TIMES_PATH,
+    cement_path: Path = CEMENTED_PATH,
     git_branch: Optional[str] = None,
 ) -> None:
     """
@@ -27,6 +28,6 @@ def cement_cur_times(
             f.write(json.dumps(record) + "\n")
     cur_times_path.open("w").close()
 
-    if record:
+    if record and record.get("hash"):
         last_hash = record["hash"]
-        Path(CEMENTED_PATH).write_text(last_hash)
+        cement_path.write_text(last_hash)
