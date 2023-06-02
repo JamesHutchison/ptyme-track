@@ -7,6 +7,9 @@ on:
       pr-number:
         required: true
         type: string
+    secrets:
+      GITHUB_TOKEN:
+        required: true
 
 jobs:
   should_run:
@@ -20,6 +23,7 @@ jobs:
       with:
         fetch-depth: 2
         ref: refs/pull/${{ inputs.pr-number }}/head
+        token: ${{ secrets.GITHUB_TOKEN }}
     - name: Get changed files
       id: check_changes
       run: |
@@ -44,6 +48,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3.5.2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Set up Python 3.11
         uses: actions/setup-python@v3
         with:
