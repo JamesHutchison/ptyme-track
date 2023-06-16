@@ -62,15 +62,15 @@ def main() -> None:
         feature_branch = PTYME_TRACK_FEATURE_BRANCH
         display_git_ci_diff_times(base_branch, feature_branch)
         return
-    if args.generate_secret:
-        from ptyme_track.secret import generate_secret
-
-        generate_secret()
-        return
     if args.ensure_secret:
         from ptyme_track.secret import ensure_secret
 
         ensure_secret()
+        return
+    if args.generate_secret:
+        from ptyme_track.secret import generate_secret
+
+        generate_secret()
         return
     if args.time_blocks:
         from ptyme_track.time_blocks import get_time_blocks
