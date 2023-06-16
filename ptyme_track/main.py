@@ -36,10 +36,17 @@ def main() -> None:
     # time-blocks takes a file to extract the time blocks from
     parser.add_argument("--time-blocks", help="Extract time blocks from file")
     parser.add_argument(
+        "--no-validate",
+        action="store_true",
+        help="Do not validate time blocks against the known secret. This currently only affects --time-blocks",
+    )
+    parser.add_argument(
         "--standalone", action="store_true", help="Run as both a client and a server"
     )
     parser.add_argument(
-        "--git-ci-times", action="store_true", help="Get the current times on this PR from git"
+        "--git-ci-times",
+        action="store_true",
+        help="Get the current times on this PR from git. Note that currently times are not validated",
     )
 
     args = parser.parse_args()
@@ -75,7 +82,9 @@ def main() -> None:
     if args.time_blocks:
         from ptyme_track.time_blocks import get_time_blocks
 
-        time_blocks = get_time_blocks(Path(args.time_blocks), get_secret())
+        time_blocks = get_time_blocks(
+            Path(args.time_blocks), get_secret(), check_against_secret=(not args.no_validate)
+        )
         total_time = timedelta(minutes=0)
         for block in time_blocks:
             total_time += block.duration

@@ -1,9 +1,13 @@
 import json
 from pathlib import Path
-from typing import List, Tuple
+from typing import Callable, List, NamedTuple, Optional, Tuple
 
 from ptyme_track.signature import signature_from_time
 from ptyme_track.signed_time import SignedTime
+
+_SecretAndValidator = NamedTuple(
+    "_SecretAndValidator", [("secret", str), ("validator", Callable)]
+)
 
 
 def validate_signed_time_given_secret(secret: str, signed_time: SignedTime) -> dict:
@@ -17,15 +21,25 @@ def validate_signed_time_given_secret(secret: str, signed_time: SignedTime) -> d
 
 
 def validate_entries(file: Path, secret: str) -> Tuple[List[dict], List[dict]]:
+    return load_entries(file, _SecretAndValidator(secret, validate_signed_time_given_secret))
+
+
+def load_entries(
+    file: Path, secret_and_validator: Optional[_SecretAndValidator] = None
+) -> Tuple[List[dict], List[dict]]:
     valid = []
     invalid = []
     with file.open() as times_file:
         for line in times_file.readlines():
             try:
                 record = json.loads(line)
-                result = validate_signed_time_given_secret(
-                    secret, SignedTime(**record["signed_time"])
-                )
+                if secret_and_validator:
+                    result = secret_and_validator.validator(
+                        secret_and_validator.secret, SignedTime(**record["signed_time"])
+                    )
+                else:
+                    valid.append(record)
+                    continue
             except (json.JSONDecodeError, ValueError, KeyError):
                 invalid.append(record)
             else:
