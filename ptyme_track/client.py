@@ -42,7 +42,6 @@ class PtymeClient:
         self._ignored_dirs = ignored_dirs
 
     def run_forever(self, cemented_file=Path(CEMENTED_PATH)) -> None:
-        validate_secret_file_exists()
         print("Starting ptyme-track", flush=True)
         prev_files_hash = None
         stopped = False
@@ -175,6 +174,10 @@ class PtymeClient:
 class StandalonePtymeClient(PtymeClient):
     def __init__(self, watched_dirs: List[str], ignored_dirs: List[str]) -> None:
         super().__init__("", watched_dirs, ignored_dirs)
+
+    def run_forever(self, cemented_file=Path(CEMENTED_PATH)) -> None:
+        validate_secret_file_exists()
+        return super().run_forever(cemented_file)
 
     def _retrieve_signed_time(self) -> SignedTime:
         return sign_time()

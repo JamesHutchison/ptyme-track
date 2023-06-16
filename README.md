@@ -7,11 +7,15 @@ The obnoxiously hard to spell time tracking based on file modifications and sign
 `pip install ptyme-track`
 
 ### Server / client
+For the server, generate a secret first with `ptyme-track --ensure-secret`
+
 Simply run the server with `ptyme_track --server`
 
 For the client, use `ptyme_track --client`
 
 ### Running locally
+Run `ptyme-track --ensure-secret` to generate a secret and update the .gitignore file.
+
 Simply run `ptyme_track --standalone` in the background.
 
 ### Setting directories to watch
