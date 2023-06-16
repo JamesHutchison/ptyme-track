@@ -26,6 +26,9 @@ def main() -> None:
     parser.add_argument(
         "--generate-secret", action="store_true", help="Generate a secret and update gitignore"
     )
+    parser.add_argument(
+        "--ensure-secret", action="store_true", help="Like generate-secret but only if missing"
+    )
     parser.add_argument("--server", action="store_true", help="Run as server")
     parser.add_argument("--client", action="store_true", help="Run as client")
     # cement takes a parameter which is the name of the file to cement to
@@ -60,9 +63,14 @@ def main() -> None:
         display_git_ci_diff_times(base_branch, feature_branch)
         return
     if args.generate_secret:
-        from ptyme_track.server import generate_secret
+        from ptyme_track.secret import generate_secret
 
         generate_secret()
+        return
+    if args.ensure_secret:
+        from ptyme_track.secret import ensure_secret
+
+        ensure_secret()
         return
     if args.time_blocks:
         from ptyme_track.time_blocks import get_time_blocks

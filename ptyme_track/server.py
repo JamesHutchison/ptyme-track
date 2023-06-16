@@ -1,13 +1,11 @@
 import datetime
 import json
-import uuid
 from dataclasses import asdict
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from pathlib import Path
 from urllib.parse import urlparse
 
-from ptyme_track.ptyme_env import SECRET_PATH, SERVER_ID, SERVER_URL
-from ptyme_track.secret import get_secret
+from ptyme_track.ptyme_env import SERVER_ID, SERVER_URL
+from ptyme_track.secret import get_secret, validate_secret_file_exists
 from ptyme_track.signature import signature_from_time
 from ptyme_track.signed_time import SignedTime
 from ptyme_track.validation import validate_signed_time_given_secret
@@ -65,23 +63,11 @@ def _signature_from_time(time_as_str: str) -> str:
 
 
 def run_forever(server_class=HTTPServer, handler_class=MyRequestHandler) -> None:
+    validate_secret_file_exists()
     server_host = urlparse(SERVER_URL).hostname
     server_port = urlparse(SERVER_URL).port
     httpd = server_class((server_host, server_port), handler_class)
     httpd.serve_forever()
-
-
-def generate_secret() -> None:
-    with open(SECRET_PATH, "w") as f:
-        f.write(str(uuid.uuid4()))
-    git_ignore = Path(".gitignore")
-    if git_ignore.exists():
-        contents = git_ignore.read_text()
-        if SECRET_PATH not in contents:
-            to_write = contents + "\n# ptyme server secret\n" + SECRET_PATH
-            if contents.endswith("\n"):
-                to_write += "\n"
-            git_ignore.write_text(to_write)
 
 
 if __name__ == "__main__":
