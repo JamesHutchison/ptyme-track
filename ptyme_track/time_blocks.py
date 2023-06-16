@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import List, Optional
 
 from ptyme_track.signed_time import SignedTime
-from ptyme_track.validation import validate_entries
+from ptyme_track.validation import load_entries, validate_entries
 
 
 @dataclass
@@ -23,8 +23,12 @@ def get_time_blocks(
     buffer_minutes: int = 5,
     start_time_utc: Optional[datetime.datetime] = None,
     end_time_utc: Optional[datetime.datetime] = None,
+    check_against_secret: bool = True,
 ) -> List[TimeBlock]:
-    valid, invalid = validate_entries(file, secret)
+    if check_against_secret:
+        valid, invalid = validate_entries(file, secret)
+    else:
+        valid, invalid = load_entries(file)
     considered = []
     for record in valid:
         signed_time = SignedTime(**record["signed_time"])

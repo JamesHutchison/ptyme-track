@@ -16,6 +16,7 @@ from ptyme_track.ptyme_env import (
     PTYME_TRACK_DIR,
     PTYME_WATCH_INTERVAL_MIN,
 )
+from ptyme_track.secret import validate_secret_file_exists
 from ptyme_track.server import sign_time
 from ptyme_track.signed_time import SignedTime
 
@@ -173,6 +174,10 @@ class PtymeClient:
 class StandalonePtymeClient(PtymeClient):
     def __init__(self, watched_dirs: List[str], ignored_dirs: List[str]) -> None:
         super().__init__("", watched_dirs, ignored_dirs)
+
+    def run_forever(self, cemented_file=Path(CEMENTED_PATH)) -> None:
+        validate_secret_file_exists()
+        return super().run_forever(cemented_file)
 
     def _retrieve_signed_time(self) -> SignedTime:
         return sign_time()

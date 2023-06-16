@@ -26,6 +26,9 @@ def main() -> None:
     parser.add_argument(
         "--generate-secret", action="store_true", help="Generate a secret and update gitignore"
     )
+    parser.add_argument(
+        "--ensure-secret", action="store_true", help="Like generate-secret but only if missing"
+    )
     parser.add_argument("--server", action="store_true", help="Run as server")
     parser.add_argument("--client", action="store_true", help="Run as client")
     # cement takes a parameter which is the name of the file to cement to
@@ -33,10 +36,17 @@ def main() -> None:
     # time-blocks takes a file to extract the time blocks from
     parser.add_argument("--time-blocks", help="Extract time blocks from file")
     parser.add_argument(
+        "--no-validate",
+        action="store_true",
+        help="Do not validate time blocks against the known secret. This currently only affects --time-blocks",
+    )
+    parser.add_argument(
         "--standalone", action="store_true", help="Run as both a client and a server"
     )
     parser.add_argument(
-        "--git-ci-times", action="store_true", help="Get the current times on this PR from git"
+        "--git-ci-times",
+        action="store_true",
+        help="Get the current times on this PR from git. Note that currently times are not validated",
     )
 
     args = parser.parse_args()
@@ -59,15 +69,22 @@ def main() -> None:
         feature_branch = PTYME_TRACK_FEATURE_BRANCH
         display_git_ci_diff_times(base_branch, feature_branch)
         return
+    if args.ensure_secret:
+        from ptyme_track.secret import ensure_secret
+
+        ensure_secret()
+        return
     if args.generate_secret:
-        from ptyme_track.server import generate_secret
+        from ptyme_track.secret import generate_secret
 
         generate_secret()
         return
     if args.time_blocks:
         from ptyme_track.time_blocks import get_time_blocks
 
-        time_blocks = get_time_blocks(Path(args.time_blocks), get_secret())
+        time_blocks = get_time_blocks(
+            Path(args.time_blocks), get_secret(), check_against_secret=(not args.no_validate)
+        )
         total_time = timedelta(minutes=0)
         for block in time_blocks:
             total_time += block.duration
