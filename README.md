@@ -1,4 +1,6 @@
 # Ptyme Track
+![versions](https://img.shields.io/pypi/pyversions/ptyme-track)
+
 The obnoxiously hard to spell time tracking based on file modifications and signed time reporting. The P is silent like in Pterodactyl
 
 ## Usage
