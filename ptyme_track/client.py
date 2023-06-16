@@ -139,7 +139,7 @@ class PtymeClient:
             track_dir.mkdir()
         git_ignore = track_dir / ".gitignore"
         if not git_ignore.exists():
-            git_ignore.write_text("!.gitignore\n.*")
+            git_ignore.write_text("!.gitignore\n!.cemented\n.*\n")
 
     def _retrieve_signed_time(self) -> SignedTime:
         # retrieve the current time from the server using the built-in urllib module
