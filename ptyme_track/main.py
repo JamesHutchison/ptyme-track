@@ -48,6 +48,16 @@ def main() -> None:
         action="store_true",
         help="Get the current times on this PR from git. Note that currently times are not validated",
     )
+    parser.add_argument(
+        "--bufferless-block-min-size",
+        help="The minimum number of minutes (inclusive) gapped block must be to lose its buffer",
+        default="5",
+    )
+    parser.add_argument(
+        "--bufferless-block-gap",
+        help="The number of minutes an isolated time block that falls below the min size must be to lose its buffer",
+        default="90",
+    )
 
     args = parser.parse_args()
 
@@ -83,7 +93,11 @@ def main() -> None:
         from ptyme_track.time_blocks import get_time_blocks
 
         time_blocks = get_time_blocks(
-            Path(args.time_blocks), get_secret(), check_against_secret=(not args.no_validate)
+            Path(args.time_blocks),
+            get_secret(),
+            check_against_secret=(not args.no_validate),
+            bufferless_block_min_size=int(args.bufferless_block_min_size),
+            bufferless_block_gap=int(args.bufferless_block_gap),
         )
         total_time = timedelta(minutes=0)
         for block in time_blocks:
