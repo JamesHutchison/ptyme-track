@@ -73,8 +73,8 @@ def get_time_blocks(
 def build_time_blocks_from_records(
     records: List[dict],
     buffer: datetime.timedelta,
-    bufferless_block_min_size: int,
-    bufferless_block_gap: int,
+    bufferless_block_min_size: int = 5,
+    bufferless_block_gap: int = 90,
 ) -> List[TimeBlock]:
     sorted_signed_times: List[SignedTime] = sorted(
         [SignedTime(**r["signed_time"]) for r in records], key=lambda r: r.dt
