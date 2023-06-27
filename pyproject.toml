@@ -8,7 +8,7 @@ line-length = 98
 
 [tool.poetry]
 name = "ptyme-track"
-version = "0.2.0"
+version = "0.3.0"
 description = "The obnoxiously named time tracking based on file modifications and signed reporting. The P is silent like in Pterodactyl"
 authors = ["James Hutchison <JamesGHutchison@proton.me>"]
 license = "MIT"
